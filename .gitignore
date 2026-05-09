@@ -1,0 +1,33 @@
+# ─── Secrets & local env (never commit) ─────────────────────────
+.env
+.env.*
+!.env.example
+_env.local
+sealed-sky-web/_env.local
+
+# ─── Node ───────────────────────────────────────────────────────
+node_modules/
+backend/node_modules/
+
+# ─── Backend runtime / logs ─────────────────────────────────────
+backend/json_history_validation.json
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# ─── Rust applet build ──────────────────────────────────────────
+target/
+
+# ─── Foundry (if used from repo root) ───────────────────────────
+cache/
+out/
+
+# ─── OS / IDE ───────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ─── Large firmware (rebuild with ./docker/build.sh — avoids bloating GitHub)
+bin/*.imx
+bin/*.elf

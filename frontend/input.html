@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seal Sky Input | SignInference</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+    :root {
+      color-scheme: dark;
+      --bg: #060606;
+      --panel: #14110a;
+      --text: #fff5de;
+      --muted: #d6c69b;
+      --line: #4b3e1f;
+      --accent: #ffd451;
+      --accent-2: #ffb800;
+      --danger: #ff7d9d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% -20%, #8a5f1599 0%, transparent 48%),
+        radial-gradient(circle at 15% 8%, #7a5f1f40, transparent 36%),
+        radial-gradient(circle at 85% 12%, #c0901d33, transparent 34%),
+        var(--bg);
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 36px 18px 28px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #19140c 0%, #120e08 100%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    .title { margin: 0 0 6px; }
+    .subtitle { margin: 0 0 16px; color: var(--muted); }
+
+    form { display: grid; gap: 12px; }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #5a471c;
+      background: #0f0c08;
+      color: var(--text);
+      font-family: inherit;
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px #ffd45140;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, .nav-link {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      color: #241600;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .btn-ghost, .nav-link {
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+    }
+
+    .status {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status.error { color: var(--danger); }
+
+    .output {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #5a471c;
+      background: #0f0c08;
+      min-height: 46px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <article class="card">
+      <h1 class="title">Seal Sky Input</h1>
+      <p class="subtitle">Generate hash from trusted USB `SignInference` call.</p>
+
+      <form id="sign-form">
+        <label>
+          API endpoint
+          <input id="endpoint" type="text" value="http://localhost:3000/sign-inference" placeholder="http://localhost:3000/sign-inference">
+        </label>
+        <label>
+          Sealed Sky Text
+          <input id="sealed-sky-text-input" type="text" value="seal_sky_seal_box_text" placeholder="Your sealed message or label">
+        </label>
+        <label>
+          timestamp
+          <input id="timestamp-input" type="text" value="123456" placeholder="123456">
+        </label>
+        <label>
+          Hash
+          <input id="image-hash-input" type="text" value="0xabc" placeholder="0xabc">
+        </label>
+        <div class="row">
+          <button class="btn-primary" id="send-btn" type="submit">Generate hash</button>
+          <button class="btn-ghost" id="clear-btn" type="button">Clear</button>
+          <a class="nav-link" href="./index.html">Back to index</a>
+          <a class="nav-link" href="./history.html">Open history</a>
+          <span class="status" id="status">Idle</span>
+        </div>
+      </form>
+
+      <label style="margin-top:12px;">
+        hash
+        <input id="hash-output" type="text" readonly placeholder="Generated hash will appear here">
+      </label>
+      <div id="raw-output" class="output"></div>
+    </article>
+  </main>
+
+  <script>
+    const form = document.getElementById("sign-form");
+    const endpointInput = document.getElementById("endpoint");
+    const sealedSkyTextInput = document.getElementById("sealed-sky-text-input");
+    const timestampInput = document.getElementById("timestamp-input");
+    const imageHashInput = document.getElementById("image-hash-input");
+    const hashOutput = document.getElementById("hash-output");
+    const rawOutput = document.getElementById("raw-output");
+    const statusEl = document.getElementById("status");
+    const sendBtn = document.getElementById("send-btn");
+    const clearBtn = document.getElementById("clear-btn");
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setStatus("Sending...");
+      sendBtn.disabled = true;
+
+      const payload = {
+        sealedSkyText: sealedSkyTextInput.value.trim(),
+        timestamp: timestampInput.value.trim(),
+        imageHash: imageHashInput.value.trim()
+      };
+
+      try {
+        const response = await fetch(endpointInput.value.trim(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await response.text();
+        let parsed;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          parsed = { raw: text };
+        }
+
+        if (!response.ok) {
+          hashOutput.value = "";
+          rawOutput.textContent = JSON.stringify(parsed, null, 2);
+          setStatus(`HTTP ${response.status}`, true);
+          return;
+        }
+
+        hashOutput.value = parsed.hash || "";
+        rawOutput.textContent = JSON.stringify(parsed, null, 2);
+        setStatus("Done");
+      } catch (error) {
+        hashOutput.value = "";
+        rawOutput.textContent = String(error);
+        setStatus("Network error", true);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      hashOutput.value = "";
+      rawOutput.textContent = "";
+      setStatus("Idle");
+    });
+  </script>
+</body>
+</html>

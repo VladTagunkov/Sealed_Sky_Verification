@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validation History</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+    :root {
+      color-scheme: dark;
+      --bg: #060606;
+      --panel: #14110a;
+      --text: #fff5de;
+      --muted: #d6c69b;
+      --line: #4b3e1f;
+      --accent: #ffd451;
+      --accent-2: #ffb800;
+      --ok: #ffe27f;
+      --danger: #ff7d9d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% -20%, #8a5f1599 0%, transparent 48%),
+        radial-gradient(circle at 15% 8%, #7a5f1f40, transparent 36%),
+        radial-gradient(circle at 85% 12%, #c0901d33, transparent 34%),
+        var(--bg);
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 36px 18px 28px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #19140c 0%, #120e08 100%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    .title { margin: 0 0 6px; }
+    .subtitle { margin: 0 0 16px; color: var(--muted); }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    button, .nav-link {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      color: #241600;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .nav-link {
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+    }
+
+    .status {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status.error { color: var(--danger); }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      border: 1px dashed #8f6b24;
+      border-radius: 10px;
+      padding: 12px;
+      background: #110d08;
+      display: grid;
+      gap: 6px;
+      font-size: 0.92rem;
+    }
+
+    .kv { color: var(--muted); }
+    .value { color: #ffebbd; word-break: break-word; }
+    .accepted { color: var(--ok); font-weight: 700; }
+    .rejected { color: var(--danger); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <article class="card">
+      <h1 class="title">Validation History</h1>
+      <p class="subtitle">Latest 3 validation results from backend history.</p>
+
+      <div class="row">
+        <button id="refresh-btn" class="btn-primary" type="button">Refresh</button>
+        <button id="publish-ens-full-btn" class="btn-primary" type="button" style="background:linear-gradient(90deg,#6b5cff,#8b7cff);color:#fff;">Publish full history to ENS</button>
+        <button id="publish-ens-last-btn" class="btn-primary" type="button" style="background:linear-gradient(90deg,#c45cff,#e080ff);color:#fff;">Publish last result to ENS</button>
+        <a class="nav-link" href="./index.html">Back to index</a>
+        <a class="nav-link" href="./input.html">Seal Sky Input</a>
+        <span class="status" id="status">Idle</span>
+      </div>
+      <p id="ens-result" class="subtitle" style="margin-top:8px;font-family:ui-monospace,monospace;font-size:0.85rem;"></p>
+
+      <section id="history-list" class="history-list"></section>
+    </article>
+  </main>
+
+  <script>
+    const refreshBtn = document.getElementById("refresh-btn");
+    const publishEnsFullBtn = document.getElementById("publish-ens-full-btn");
+    const publishEnsLastBtn = document.getElementById("publish-ens-last-btn");
+    const ensResultEl = document.getElementById("ens-result");
+    const statusEl = document.getElementById("status");
+    const historyListEl = document.getElementById("history-list");
+    const endpoint = "http://localhost:3000/history?limit=3";
+    const publishEnsEndpoint = "http://localhost:3000/publish-validation-ens";
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    function line(label, value) {
+      const safeValue = value === undefined || value === null ? "" : String(value);
+      return `<div><span class="kv">${label}: </span><span class="value">${safeValue}</span></div>`;
+    }
+
+    function renderItems(items) {
+      if (!items.length) {
+        historyListEl.innerHTML = '<div class="item">No validation history yet.</div>';
+        return;
+      }
+
+      historyListEl.innerHTML = items.map((item) => {
+        const statusClass = item.status === "accepted" ? "accepted" : "rejected";
+        return `
+          <article class="item">
+            <div>Status: <span class="${statusClass}">${item.status || "unknown"}</span></div>
+            ${line("receivedAt", item.receivedAt)}
+            ${line("Sealed Sky Text", item.sealedSkyText || item.result)}
+            ${line("timestamp", item.timestamp)}
+            ${line("imageHash", item.imageHash)}
+            ${line("proof", item.proof)}
+            ${line("reason", item.reason || "")}
+            ${line("tx", item.tx || "")}
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function loadHistory() {
+      setStatus("Loading...");
+      refreshBtn.disabled = true;
+      try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data && data.error ? data.error : `HTTP ${response.status}`);
+        }
+        renderItems(Array.isArray(data.items) ? data.items : []);
+        setStatus("Done");
+      } catch (error) {
+        historyListEl.innerHTML = `<div class="item">${String(error)}</div>`;
+        setStatus("Load error", true);
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    }
+
+    refreshBtn.addEventListener("click", loadHistory);
+
+    async function publishToEns(body, label) {
+      ensResultEl.textContent = "";
+      setStatus(label);
+      publishEnsFullBtn.disabled = true;
+      publishEnsLastBtn.disabled = true;
+      try {
+        const response = await fetch(publishEnsEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          ensResultEl.textContent = data.error || `HTTP ${response.status}`;
+          setStatus("ENS publish failed", true);
+          return;
+        }
+        const lines = [
+          data.scope ? `Scope: ${data.scope}` : "",
+          `ENS: ${data.ens}`,
+          data.ensAppUrl ? `App: ${data.ensAppUrl}` : "",
+          data.readApiUrl ? `JSON: ${data.readApiUrl}` : "",
+          typeof data.total === "number" ? `Total events in file: ${data.total}` : "",
+          typeof data.published === "number" ? `Published rows: ${data.published}` : "",
+          data.truncated ? "(subset in history blob — see com.sealedsky.validation_* records)" : "",
+        ].filter(Boolean);
+        ensResultEl.textContent = lines.join(" · ");
+        setStatus("Done");
+      } catch (e) {
+        ensResultEl.textContent = String(e);
+        setStatus("ENS publish error", true);
+      } finally {
+        publishEnsFullBtn.disabled = false;
+        publishEnsLastBtn.disabled = false;
+      }
+    }
+
+    publishEnsFullBtn.addEventListener("click", () =>
+      publishToEns(
+        { scope: "full", maxEntries: 200, subdomain: "oracle-validation" },
+        "Publishing full history to ENS…",
+      ),
+    );
+
+    publishEnsLastBtn.addEventListener("click", () =>
+      publishToEns(
+        { scope: "last", subdomain: "oracle-validation-last" },
+        "Publishing last result to ENS…",
+      ),
+    );
+
+    loadHistory();
+  </script>
+</body>
+</html>

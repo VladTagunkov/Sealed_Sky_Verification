@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpaceComputer Submit Console</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+    :root {
+      color-scheme: dark;
+      --bg: #060606;
+      --panel: #14110a;
+      --panel-soft: #1c170f;
+      --text: #fff5de;
+      --muted: #d6c69b;
+      --line: #4b3e1f;
+      --accent: #ffd451;
+      --accent-2: #ffb800;
+      --ok: #ffe27f;
+      --danger: #ff7d9d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% -20%, #8a5f1599 0%, transparent 48%),
+        radial-gradient(circle at 15% 8%, #7a5f1f40, transparent 36%),
+        radial-gradient(circle at 85% 12%, #c0901d33, transparent 34%),
+        var(--bg);
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 36px 18px 28px;
+    }
+
+    .hero {
+      margin-bottom: 22px;
+    }
+
+    .hero-nav {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.08;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #19140c 0%, #120e08 100%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    .card-title {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #ffe7ad;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #5a471c;
+      background: #0f0c08;
+      color: var(--text);
+      font-family: inherit;
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px #ffd45140;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      color: #241600;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .btn-ghost {
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+    }
+
+    .nav-link {
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .status {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .right-col {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .value {
+      min-height: 26px;
+      margin: 0;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #5a471c;
+      background: #0f0c08;
+      color: #fff1cf;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .value.success {
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .queue-item {
+      border: 1px dashed #8f6b24;
+      border-radius: 10px;
+      padding: 10px;
+      background: #110d08;
+      color: #ffebbd;
+      font-size: 0.92rem;
+      display: grid;
+      gap: 6px;
+    }
+
+    .queue-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    pre {
+      margin: 0;
+      min-height: 88px;
+      border-radius: 10px;
+      border: 1px solid #5a471c;
+      background: #0f0c08;
+      padding: 12px;
+      color: #ffebbd;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      border-top: 1px solid #4a3d1f;
+      padding-top: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <p class="eyebrow">SpaceComputer Style Console</p>
+      <h1 class="title">Seal Sky Verification Submit Interface</h1>
+      <p class="subtitle">Submit inference proof data and monitor verification output in a SpaceComputer-inspired UI.</p>
+      <div class="hero-nav">
+        <a class="nav-link" href="./input.html">Open Input_Data page</a>
+        <a class="nav-link" href="./history.html">Open Validation History page</a>
+        <a class="nav-link" href="http://localhost:5173" target="_blank" rel="noreferrer">Open Sealed Sky main page</a>
+      </div>
+    </header>
+
+    <section class="layout">
+      <article class="card">
+        <h2 class="card-title">Submission Payload</h2>
+        <form id="call-form">
+          <label>
+            API endpoint
+            <input id="endpoint" type="text" value="http://localhost:3000/submit" placeholder="http://localhost:3000/submit">
+          </label>
+          <label>
+            Sealed Sky Text
+            <input id="sealed-sky-text-input" type="text" value="seal_sky_seal_box_text" placeholder="Your sealed message or label">
+          </label>
+          <label>
+            timestamp
+            <input id="timestamp-input" type="number" value="123456" placeholder="123456">
+          </label>
+          <label>
+            Hash
+            <input id="image-hash-input" type="text" value="0xabc" placeholder="0xabc">
+          </label>
+          <label>
+            proof
+            <textarea id="proof-input" placeholder="Paste proof hash">e33932e8c1b154162f9cbdb3b067a478865c4cfec7aac8fb89a01bdc69ebfd2f</textarea>
+          </label>
+          <div class="row">
+            <button class="btn-primary" type="submit" id="send-btn">Send request</button>
+            <button class="btn-ghost" type="button" id="clear-btn">Clear</button>
+            <span class="status" id="status">Idle</span>
+          </div>
+        </form>
+      </article>
+
+      <aside class="right-col">
+        <article class="card">
+          <h2 class="card-title">Proved result</h2>
+          <p id="proved-result" class="value"></p>
+        </article>
+
+        <article class="card">
+          <h2 class="card-title">Sepolia verification transaction</h2>
+          <p id="tx-result" class="value"></p>
+        </article>
+
+        <article class="card">
+          <h2 class="card-title">Sealed queue</h2>
+          <div class="queue-item">
+            <span class="queue-label">Message lock time</span>
+            <strong id="lock-time">Not locked yet</strong>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2 class="card-title">Raw response</h2>
+          <pre id="result"></pre>
+        </article>
+      </aside>
+    </section>
+
+    <footer>
+      Built for the ETH Prague 2026 hackathon demo track.
+    </footer>
+  </main>
+
+  <script>
+    const form = document.getElementById("call-form");
+    const endpointInput = document.getElementById("endpoint");
+    const sealedSkyTextInput = document.getElementById("sealed-sky-text-input");
+    const timestampInput = document.getElementById("timestamp-input");
+    const imageHashInput = document.getElementById("image-hash-input");
+    const proofInput = document.getElementById("proof-input");
+    const sendBtn = document.getElementById("send-btn");
+    const clearBtn = document.getElementById("clear-btn");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+    const provedResultEl = document.getElementById("proved-result");
+    const txResultEl = document.getElementById("tx-result");
+    const lockTimeEl = document.getElementById("lock-time");
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    function showResult(data) {
+      resultEl.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    }
+
+    function renderSummary(data) {
+      const successValue = data && typeof data === "object" ? data.success : undefined;
+      const txValue = data && typeof data === "object" ? data.tx : "";
+
+      if (successValue === true) {
+        provedResultEl.textContent = "Success";
+        provedResultEl.classList.add("success");
+      } else if (successValue === false) {
+        provedResultEl.textContent = "Failed";
+        provedResultEl.classList.remove("success");
+      } else {
+        provedResultEl.textContent = "";
+        provedResultEl.classList.remove("success");
+      }
+
+      txResultEl.textContent = txValue || "";
+    }
+
+    function lockCurrentMessage() {
+      const now = new Date();
+      lockTimeEl.textContent = now.toLocaleString();
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      sendBtn.disabled = true;
+      setStatus("Sending...");
+      lockCurrentMessage();
+
+      const timestamp = Number(timestampInput.value);
+      if (!Number.isFinite(timestamp)) {
+        showResult("timestamp must be a valid number");
+        setStatus("Validation error", true);
+        sendBtn.disabled = false;
+        return;
+      }
+
+      const payload = {
+        sealedSkyText: sealedSkyTextInput.value.trim(),
+        timestamp,
+        imageHash: imageHashInput.value.trim(),
+        proof: proofInput.value.trim()
+      };
+
+      try {
+        const response = await fetch(endpointInput.value.trim(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await response.text();
+        let parsed;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          parsed = text;
+        }
+
+        if (!response.ok) {
+          renderSummary(parsed);
+          showResult(parsed);
+          setStatus(`HTTP ${response.status}`, true);
+          return;
+        }
+
+        renderSummary(parsed);
+        showResult(parsed);
+        setStatus("Done");
+      } catch (error) {
+        const message = String(error);
+        const hint =
+          "If backend is running, this is usually a CORS/browser-origin issue. Restart backend after enabling CORS.";
+        renderSummary(null);
+        showResult(`${message}\n\n${hint}`);
+        setStatus("Network/CORS error", true);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      renderSummary(null);
+      resultEl.textContent = "";
+      lockTimeEl.textContent = "Not locked yet";
+      setStatus("Idle");
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "gotee-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "upload": "bun run scripts/upload.ts",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
