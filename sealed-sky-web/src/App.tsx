@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Compose, type SealOptions } from "./components/Compose";
 import { Queue } from "./components/Queue";
 import { Detail } from "./components/Detail";
+import { ValidationHistoryPanel } from "./components/ValidationHistoryPanel";
 import { Starfield } from "./components/Starfield";
 import { WalletConnect } from "./components/WalletConnect";
 import {
@@ -400,6 +401,9 @@ export default function App() {
           <Detail item={selected} />
         </div>
       </main>
+      <section className="bottom-wide">
+        <ValidationHistoryPanel />
+      </section>
       <footer>
         <div className="credit">
           Built for <strong>ETH Prague 2026 Hackathon</strong> · Stardust Cartel

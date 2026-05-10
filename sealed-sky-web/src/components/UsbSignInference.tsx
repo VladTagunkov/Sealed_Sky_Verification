@@ -20,6 +20,12 @@ function normalizeProofHex(p: string): string {
   return t.startsWith("0x") || t.startsWith("0X") ? t.slice(2) : t;
 }
 
+/** Backend appends to json_history_validation.json — refresh the main-page history panel. */
+function requestValidationHistoryRefresh() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event("sealedsky-validation-history"));
+}
+
 interface Props {
   /** Queue item id — resets form when selection changes */
   itemId: string;
@@ -125,6 +131,8 @@ export function UsbSignInference({ itemId, plaintext }: Props) {
       setSignStatus("err");
       setSignError(e instanceof Error ? e.message : String(e));
       setRawResponse("");
+    } finally {
+      requestValidationHistoryRefresh();
     }
   }, [sealedSkyText, timestamp, contentHash]);
 
@@ -201,6 +209,8 @@ export function UsbSignInference({ itemId, plaintext }: Props) {
     } catch (e) {
       setSubmitStatus("err");
       setSubmitError(e instanceof Error ? e.message : String(e));
+    } finally {
+      requestValidationHistoryRefresh();
     }
   }, [sealedSkyText, timestamp, contentHash, proof]);
 

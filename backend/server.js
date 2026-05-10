@@ -74,7 +74,17 @@ function sealedSkyTextFromBody(body) {
   const trimmed = raw.trim();
   return trimmed || DEFAULT_SEALED_SKY_TEXT;
 }
-const HISTORY_FILE_PATH = path.join(__dirname, "json_history_validation.json");
+/** Single source of truth for validation JSON (override for monorepo / tooling). */
+const HISTORY_FILE_PATH = process.env.VALIDATION_HISTORY_PATH
+  ? path.resolve(process.env.VALIDATION_HISTORY_PATH)
+  : path.join(__dirname, "json_history_validation.json");
+
+function normalizeProofHex(proof) {
+  return String(proof || "")
+    .trim()
+    .replace(/^0x/i, "")
+    .toLowerCase();
+}
 
 function readHistory() {
   try {
@@ -336,10 +346,11 @@ app.post("/submit", async (req, res) => {
     .createHmac("sha256", DEVICE_SECRET)
     .update(legacyPayload)
     .digest("hex");
+  const proofNorm = normalizeProofHex(proof);
   const matchedPayload =
-    proof === expectedCanonical
+    proofNorm === expectedCanonical
       ? canonicalPayload
-      : proof === expectedLegacy
+      : proofNorm === expectedLegacy
         ? legacyPayload
         : null;
 
@@ -368,38 +379,61 @@ app.post("/submit", async (req, res) => {
     ethers.toUtf8Bytes(matchedPayload)
   );
 
-  // Submit onchain
-  const tx = await contract.submitInference(
-    "armory-mk2-alpha",
-    sealedSkyText,
-    timestamp,
-    imageHash,
-    payloadHash
-  );
+  try {
+    const tx = await contract.submitInference(
+      "armory-mk2-alpha",
+      sealedSkyText,
+      timestamp,
+      imageHash,
+      payloadHash
+    );
 
-  await tx.wait();
+    await tx.wait();
 
-  const historyRecord = {
-    receivedAt,
-    status: "accepted",
-    sealedSkyText,
-    timestamp,
-    imageHash,
-    proof,
-    payload: matchedPayload,
-    payloadHash,
-    tx: tx.hash
-  };
-  appendHistory(historyRecord);
+    const historyRecord = {
+      receivedAt,
+      status: "accepted",
+      stage: "submit_chain",
+      sealedSkyText,
+      timestamp,
+      imageHash,
+      proof: proofNorm,
+      payload: matchedPayload,
+      payloadHash,
+      tx: tx.hash
+    };
+    appendHistory(historyRecord);
 
-  res.json({
-    success: true,
-    tx: tx.hash,
-    receivedAt
-  });
+    res.json({
+      success: true,
+      tx: tx.hash,
+      receivedAt
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    appendHistory({
+      receivedAt: new Date().toISOString(),
+      status: "rejected",
+      stage: "submit_chain",
+      reason: "chain_submit_failed",
+      error: msg,
+      sealedSkyText,
+      timestamp,
+      imageHash,
+      proof: proofNorm,
+      payload: matchedPayload,
+      payloadHash
+    });
+    res.status(502).json({
+      success: false,
+      error: msg,
+      receivedAt
+    });
+  }
 });
 
 app.post("/sign-inference", (req, res) => {
+  const receivedAt = new Date().toISOString();
   const {
     timestamp,
     imageHash
@@ -409,6 +443,15 @@ app.post("/sign-inference", (req, res) => {
     typeof imageHash !== "string" ||
     (!Number.isFinite(Number(timestamp)) && typeof timestamp !== "string")
   ) {
+    appendHistory({
+      receivedAt,
+      status: "rejected",
+      stage: "sign_inference",
+      reason: "invalid input",
+      sealedSkyText: sealedSkyTextFromBody(req.body),
+      timestamp,
+      imageHash
+    });
     return res.status(400).json({
       error: "timestamp and imageHash are required"
     });
@@ -431,6 +474,16 @@ app.post("/sign-inference", (req, res) => {
   );
 
   if (ncResult.status !== 0) {
+    appendHistory({
+      receivedAt,
+      status: "rejected",
+      stage: "sign_inference",
+      reason: "failed to reach USB device",
+      details: ncResult.stderr || "nc exited with non-zero status",
+      sealedSkyText,
+      timestamp,
+      imageHash
+    });
     return res.status(502).json({
       error: "failed to reach USB device",
       details: ncResult.stderr || "nc exited with non-zero status"
@@ -440,6 +493,15 @@ app.post("/sign-inference", (req, res) => {
   const rawOutput = (ncResult.stdout || "").trim();
 
   if (!rawOutput) {
+    appendHistory({
+      receivedAt,
+      status: "rejected",
+      stage: "sign_inference",
+      reason: "device returned empty response",
+      sealedSkyText,
+      timestamp,
+      imageHash
+    });
     return res.status(502).json({
       error: "device returned empty response"
     });
@@ -449,6 +511,16 @@ app.post("/sign-inference", (req, res) => {
   try {
     parsed = JSON.parse(rawOutput);
   } catch {
+    appendHistory({
+      receivedAt,
+      status: "rejected",
+      stage: "sign_inference",
+      reason: "invalid response from device",
+      raw: rawOutput,
+      sealedSkyText,
+      timestamp,
+      imageHash
+    });
     return res.status(502).json({
       error: "invalid response from device",
       raw: rawOutput
@@ -456,13 +528,34 @@ app.post("/sign-inference", (req, res) => {
   }
 
   if (parsed.Error) {
+    appendHistory({
+      receivedAt,
+      status: "rejected",
+      stage: "sign_inference",
+      reason: String(parsed.Error),
+      sealedSkyText,
+      timestamp,
+      imageHash
+    });
     return res.status(502).json({
       error: parsed.Error
     });
   }
 
+  const outHash = parsed.Output || "";
+  appendHistory({
+    receivedAt,
+    status: "device_signed",
+    stage: "sign_inference",
+    note: "USB Armory SignInference HMAC",
+    sealedSkyText,
+    timestamp,
+    imageHash,
+    proof: normalizeProofHex(outHash) || outHash
+  });
+
   return res.json({
-    hash: parsed.Output || ""
+    hash: outHash
   });
 });
 
