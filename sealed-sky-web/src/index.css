@@ -814,6 +814,93 @@ button.ghost:hover:not(:disabled) {
   border-bottom-style: solid;
 }
 
+/* Sepolia submit (below USB SignInference on detail panel) */
+.sepolia-submit-panel {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(120, 160, 255, 0.28);
+}
+
+.sepolia-submit-lead {
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.sepolia-submit-lead a {
+  color: #9eb7ff;
+  border-bottom: 1px dotted rgba(158, 183, 255, 0.5);
+}
+
+.sepolia-submit-lead a:hover {
+  border-bottom-style: solid;
+}
+
+.sepolia-submit-btn {
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #5b7cff, #3d5afc);
+  color: #f4f6ff;
+  border: none;
+  cursor: pointer;
+}
+
+.sepolia-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.sepolia-submit-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sepolia-submit-ok {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #9eb7ff;
+  font-weight: 600;
+}
+
+.sepolia-submit-dl {
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.sepolia-submit-dl dt {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.sepolia-submit-dl dd {
+  margin: 0;
+  word-break: break-all;
+  color: var(--text-2);
+}
+
+.sepolia-tx-link {
+  color: #9eb7ff;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(158, 183, 255, 0.45);
+}
+
+.sepolia-tx-link:hover {
+  border-bottom-style: solid;
+}
+
 .key-note {
   margin-top: 18px;
   padding: 12px 14px;

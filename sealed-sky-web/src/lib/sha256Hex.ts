@@ -17,3 +17,8 @@ export function todayIsoDateLocal(): string {
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
+
+/** Unix seconds as string — matches verification index + Solidity uint256 timestamp field. */
+export function unixSecondsNowString(): string {
+  return String(Math.floor(Date.now() / 1000));
+}
