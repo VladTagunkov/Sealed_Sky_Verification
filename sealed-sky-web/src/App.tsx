@@ -377,8 +377,9 @@ export default function App() {
         </div>
         <div className="project-nav">
           <a href="http://localhost:3000/ui/index.html" target="_blank" rel="noreferrer">
-            Open Seal Sky Verification Submit Interface
+            Verification submit UI (backend)
           </a>
+          <span className="nav-hint"> · After a capsule unlocks, USB SignInference lives in the detail panel →</span>
         </div>
         <WalletConnect onIdentityChange={setIdentity} />
         {bootError && <div className="error">drand unreachable: {bootError}</div>}

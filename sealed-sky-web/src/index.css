@@ -185,6 +185,15 @@ header h1 .subtitle {
   border-color: var(--accent);
 }
 
+.project-nav .nav-hint {
+  display: inline;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-left: 6px;
+}
+
 main {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -661,6 +670,148 @@ button.ghost:hover:not(:disabled) {
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.5;
+}
+
+/* USB SignInference panel (under plaintext when timelock is open) */
+.usb-sign-panel {
+  margin-top: 22px;
+  padding: 14px 14px 12px;
+  background: rgba(20, 36, 28, 0.35);
+  border: 1px solid rgba(80, 200, 140, 0.25);
+  border-left: 2px solid rgba(80, 200, 140, 0.55);
+}
+
+.usb-sign-lead {
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.usb-sign-label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.usb-sign-textarea,
+.usb-sign-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--text-2);
+  border: 1px solid var(--hair);
+  border-radius: 0;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.usb-sign-input {
+  resize: none;
+}
+
+.usb-sign-endpoint {
+  margin-bottom: 12px;
+  font-size: 10px;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.usb-sign-endpoint .muted {
+  color: var(--muted);
+}
+
+.usb-sign-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.usb-sign-btn {
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--accent), #c9a030);
+  color: #1a1204;
+  border: none;
+  cursor: pointer;
+}
+
+.usb-sign-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.usb-sign-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.usb-sign-ok {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ok);
+}
+
+.usb-sign-err {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--danger, #ff7d9d);
+}
+
+.usb-sign-details {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.usb-sign-details summary {
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.usb-sign-raw {
+  margin: 8px 0 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--hair);
+  font-size: 10px;
+  line-height: 1.4;
+  overflow: auto;
+  max-height: 200px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.usb-sign-foot {
+  margin: 14px 0 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.usb-sign-foot a {
+  color: var(--accent);
+  border-bottom: 1px dotted var(--accent-dim);
+}
+
+.usb-sign-foot a:hover {
+  border-bottom-style: solid;
 }
 
 .key-note {

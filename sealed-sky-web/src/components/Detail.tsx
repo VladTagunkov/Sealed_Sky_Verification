@@ -6,6 +6,7 @@ import { BACKENDS } from "../lib/backend";
 import { CTRNG_GATEWAYS } from "../lib/ctrng";
 import { buildShareUrl } from "../lib/share";
 import { ensAppUrl } from "../lib/ens";
+import { UsbSignInference } from "./UsbSignInference";
 
 interface Props {
   item: QueueItem | null;
@@ -191,12 +192,15 @@ export function Detail({ item }: Props) {
       )}
 
       {item.plaintext !== undefined && (
-        <div className="plaintext-block">
-          <div className="envelope-header">
-            <span>plaintext</span>
+        <>
+          <div className="plaintext-block">
+            <div className="envelope-header">
+              <span>plaintext</span>
+            </div>
+            <pre>{item.plaintext}</pre>
           </div>
-          <pre>{item.plaintext}</pre>
-        </div>
+          <UsbSignInference itemId={item.id} plaintext={item.plaintext} />
+        </>
       )}
     </section>
   );
